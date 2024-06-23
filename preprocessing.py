@@ -4,6 +4,7 @@ import cv2
 import tkinter as tk
 import os
 import random
+import pickle
 
 root_dataset_dir = "./dataset"
 
@@ -39,9 +40,6 @@ def balanceDatasets(root_dataset_dir):
 
 balanceDatasets(root_dataset_dir)
 
-
-
-# each class will be a tuple of the image dimensions, number of color channels, label
 classes = []    
 # training data list
 training_data = []
@@ -67,6 +65,27 @@ for category in classes:
 print(f"Successfully added images to training data. {skippedImages} images skipped.")
 
 random.shuffle(training_data)
-print(training_data[1])
+
+print('img array of index 0:', training_data[0][0])
+print('class of index 0: ', classes[training_data[0][1]])
 
 print('Training data length: ', len(training_data))
+
+X = []
+y = []
+
+for data, label in training_data:
+    X.append(data)
+    y.append(label)
+
+X = np.array(X).reshape(-1, NEW_SIZE, NEW_SIZE, 3)
+
+print('X\'s shape: ', X.shape)
+
+pickle_out = open("features.pickle", "wb")
+pickle.dump(X, pickle_out)
+pickle_out.close()
+
+pickle_out = open("labels.pickle", "wb")
+pickle.dump(y, pickle_out)
+pickle_out.close()
