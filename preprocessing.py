@@ -89,3 +89,7 @@ pickle_out.close()
 pickle_out = open("labels.pickle", "wb")
 pickle.dump(y, pickle_out)
 pickle_out.close()
+
+pickle_out = open("classes.pickle", "wb")
+pickle.dump(classes, pickle_out)
+pickle_out.close()
