@@ -16,14 +16,17 @@ with open("labels.pickle", "rb") as f:
 
 with open("classes.pickle", "rb") as f:
     class_names = pickle.load(f)
+
 # normalize the image data
 X_list = X_list/255.0
-
+ 
 # permute data to be in pytorch format, aka: (batch_size, channels, height, width)
 X_list = np.transpose(X_list, (0,3,1,2))
 
 X = torch.tensor(X_list, dtype=torch.float32)
 y = torch.tensor(y_list, dtype=torch.int64)
+
+print(X[0])
 
 # split 80% of training data
 
@@ -75,11 +78,11 @@ for epoch in range(num_epochs):
     for i in range(len(X_train)):
         # forward pass
         img = X_train[i].unsqueeze(0)
-        label = y_train[i]
+        label = y_train[i].unsqueeze(0)
 
         outputs = model(img)
-        loss = loss_fn(outputs, label.unsqueeze(0))
-
+        # print('Shape of outputs: ', outputs.shape)
+        loss = loss_fn(outputs, label)
         # print('model outputs type: ', type(outputs))
 
         total_loss += loss.item()
@@ -87,14 +90,15 @@ for epoch in range(num_epochs):
         # print('prediction.item() output ', prediction.item())
         # print('label output ', label.item())
         
-        if class_names[prediction.item()] == label.item(): total_correct += 1
+        if prediction.item() == label.item(): total_correct += 1  
+        #else: print(class_names[prediction.item()], '\tincorrect')
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
     total_loss = total_loss / len(X_train)
-    accuracy = total_correct / len(X_train)
+    accuracy = 100 * (total_correct / len(X_train))
     print(f'Epoch: {epoch + 1} / {num_epochs}\tAccuracy: {accuracy:.2f}%\tLoss: {loss.item():.4f}')
 
 print('Model training complete!')
