@@ -27,6 +27,8 @@ X = torch.tensor(X_list, dtype=torch.float32)
 y = torch.tensor(y_list, dtype=torch.int64)
 
 print(X[0])
+print('X\'s shape: ', X.shape)
+print('y\'s shape: ', y.shape)
 
 # split 80% of training data
 
@@ -36,11 +38,16 @@ X_train = X[:eighty_percent]
 y_train = y[:eighty_percent]
 
 X_test = X[eighty_percent:]
-y_test = X[eighty_percent:]
+y_test = y[eighty_percent:]
 
 print("\n")
-print('X\'s shape: ', X_train.shape)
-print('y\'s shape: ', y_train.shape)
+print('X train shape: ', X_train.shape)
+print('y train shape: ', y_train.shape)
+
+
+print("\n")
+print('X test shape: ', X_test.shape)
+print('y test shape: ', y_test.shape)
 
 class NeuralNet(nn.Module):
     def __init__(self):
@@ -67,58 +74,54 @@ loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = 0.001)
 
 # training
-num_epochs = 25
+num_epochs = 100
 
 print(len(X_train))
 
 for epoch in range(num_epochs):
     total_correct = 0
-    accuracy = 0.0
     total_loss = 0.0
+    
+    # Training phase
+    model.train()
     for i in range(len(X_train)):
-        # forward pass
         img = X_train[i].unsqueeze(0)
         label = y_train[i].unsqueeze(0)
 
-        outputs = model(img)
-        # print('Shape of outputs: ', outputs.shape)
-        loss = loss_fn(outputs, label)
-        # print('model outputs type: ', type(outputs))
-
-        total_loss += loss.item()
-        _, prediction = torch.max(outputs.data, 1)
-        # print('prediction.item() output ', prediction.item())
-        # print('label output ', label.item())
-        
-        if prediction.item() == label.item(): total_correct += 1  
-        #else: print(class_names[prediction.item()], '\tincorrect')
-
         optimizer.zero_grad()
+        outputs = model(img)
+        loss = loss_fn(outputs, label)
         loss.backward()
         optimizer.step()
 
-    total_loss = total_loss / len(X_train)
-    accuracy = 100 * (total_correct / len(X_train))
-    print(f'Epoch: {epoch + 1} / {num_epochs}\tAccuracy: {accuracy:.2f}%\tLoss: {loss.item():.4f}')
+        total_loss += loss.item()
+        _, prediction = torch.max(outputs.data, 1)
+        if prediction.item() == label.item():
+            total_correct += 1
+
+    train_loss = total_loss / len(X_train)
+    train_accuracy = 100 * (total_correct / len(X_train))
+
+    # Validation phase
+    model.eval()
+    total_correct = 0
+    total_loss = 0.0
+    with torch.no_grad():
+        for i in range(len(X_test)):
+            img = X_test[i].unsqueeze(0)
+            label = y_test[i].unsqueeze(0)
+
+            outputs = model(img)
+            loss = loss_fn(outputs, label)
+            total_loss += loss.item()
+            _, prediction = torch.max(outputs.data, 1)
+            if prediction.item() == label.item():
+                total_correct += 1
+
+    val_loss = total_loss / len(X_test)
+    val_accuracy = 100 * (total_correct / len(X_test))
+
+    print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%, \
+          Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}%')
 
 print('Model training complete!')
-
-# testing
-'''
-def validate(model, x_val, y_val, loss_fn):
-    model.eval()
-    val_loss = 0.0
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for i in range(len(x_val)):
-            inputs = x_val[i].unsqueeze(0)
-            targets = y_val[i].unsqueeze(0)
-
-            outputs = model(inputs)
-            loss = loss_fn(outputs, targets)
-
-            val_loss+=loss.item()
-            _, predicted = torch.max()
-'''
