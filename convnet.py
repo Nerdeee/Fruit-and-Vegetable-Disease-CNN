@@ -78,7 +78,7 @@ class NeuralNet(nn.Module):
 model = NeuralNet()
 
 loss_fn = nn.CrossEntropyLoss()    
-optimizer = torch.optim.SGD(model.parameters(), lr = 0.001)
+optimizer = torch.optim.SGD(model.parameters(), lr = 0.01)
 
 # training
 num_epochs = 100
