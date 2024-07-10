@@ -7,7 +7,7 @@ import os
 from torch.utils.tensorboard import SummaryWriter
 
 learning_rate = 0.0009
-dropout_probability = 0.35
+dropout_probability = 0.2
 experiment_name = f'LearningRate_{learning_rate} DropoutProbability_{dropout_probability}'
 experiment_dir_name = os.path.join('runs', experiment_name)
 os.mkdir(experiment_dir_name)
@@ -66,11 +66,10 @@ class NeuralNet(nn.Module):
         self.pool = nn.MaxPool2d(2,2)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.dropout1 = nn.Dropout(p=dropout_probability)
-        self.fc1 = nn.Linear(35344, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 128)
-        self.fc4 = nn.Linear(128, 64)
-        self.fc5 = nn.Linear(64, 28)
+        self.fc1 = nn.Linear(35344, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64, 28)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -79,8 +78,7 @@ class NeuralNet(nn.Module):
         x = self.dropout1(F.relu(self.fc1(x)))
         x = self.dropout1(F.relu(self.fc2(x)))
         x = self.dropout1(F.relu(self.fc3(x)))
-        x = self.dropout1(F.relu(self.fc4(x)))
-        x = self.fc5(x)
+        x = self.fc4(x)
         return x
     
 model = NeuralNet()
