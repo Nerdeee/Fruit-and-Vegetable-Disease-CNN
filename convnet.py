@@ -3,8 +3,16 @@ import torch.nn as nn
 import pickle
 import numpy as np
 import torch.nn.functional as F
+import os
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter()
+
+learning_rate = 0.0009
+dropout_probability = 0.35
+experiment_name = f'LearningRate_{learning_rate} DropoutProbability_{dropout_probability}'
+experiment_dir_name = os.path.join('runs', experiment_name)
+os.mkdir(experiment_dir_name)
+
+writer = SummaryWriter(log_dir=f'runs/{experiment_name}')
 
 X_list = []
 y_list = []
@@ -57,7 +65,7 @@ class NeuralNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2,2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.dropout1 = nn.Dropout(p=0.5)
+        self.dropout1 = nn.Dropout(p=dropout_probability)
         self.fc1 = nn.Linear(35344, 512)
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 128)
@@ -78,7 +86,8 @@ class NeuralNet(nn.Module):
 model = NeuralNet()
 
 loss_fn = nn.CrossEntropyLoss()    
-optimizer = torch.optim.SGD(model.parameters(), lr = 0.0009)
+optimizer = torch.optim.SGD(model.parameters(), lr = learning_rate)
+min_loss = float('inf')
 
 # training
 num_epochs = 100
@@ -126,7 +135,15 @@ for epoch in range(num_epochs):
 
     val_loss = total_loss / len(X_test)
     val_accuracy = 100 * (total_correct / len(X_test))
-
+    
+    if val_loss < min_loss:
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': val_loss
+        }, 'saved_model.pth')
+    
     writer.add_scalar("Training Loss/epoch", train_loss, epoch)
     writer.add_scalar("Training Accuracy/epoch", train_accuracy, epoch)
     
@@ -135,7 +152,7 @@ for epoch in range(num_epochs):
 
     print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%, \
           Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}%')
-
+    
 writer.flush()
 writer.close()
 print('Model training complete!')
