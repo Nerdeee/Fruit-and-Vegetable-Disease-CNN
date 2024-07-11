@@ -7,7 +7,7 @@ import os
 from torch.utils.tensorboard import SummaryWriter
 
 learning_rate = 0.0009
-dropout_probability = 0.3
+dropout_probability = 0.2
 experiment_name = f'LearningRate_{learning_rate} DropoutProbability_{dropout_probability}'
 experiment_dir_name = os.path.join('runs', experiment_name)
 os.mkdir(experiment_dir_name)
