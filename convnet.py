@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 fully_connected_layers = 4
 learning_rate = 0.0009
-dropout_probability = 0.2
+dropout_probability = 0.3
 experiment_name = f'LearningRate_{learning_rate} DropoutProbability_{dropout_probability} FCL_{fully_connected_layers}'
 experiment_dir_name = os.path.join('runs', experiment_name)
 os.mkdir(experiment_dir_name)
